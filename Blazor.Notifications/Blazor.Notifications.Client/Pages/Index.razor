@@ -1,0 +1,45 @@
+﻿@page "/"
+@using Microsoft.AspNetCore.SignalR.Client
+@implements IAsyncDisposable
+
+<PageTitle>Index</PageTitle>
+
+<h1>Hello, world!</h1>
+
+Messages:
+<ul>
+    @foreach (var message in messages)
+    {
+        <li>@message</li>
+    }
+</ul>
+@code
+{
+    private HubConnection hubConnection;
+    private readonly List<string> messages = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl("https://localhost:7014/notifications",
+                options => options.AccessTokenProvider = () => Task.FromResult<string?>
+                    ("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6IjI3NTIxYTA0LTE4NzktNDM5Yi04NWQ5LTUyYTg5OTk3YTI5MyIsInN1YiI6IjI3NTIxYTA0LTE4NzktNDM5Yi04NWQ5LTUyYTg5OTk3YTI5MyIsImp0aSI6ImIxNGUzZWRjIiwiYXVkIjpbImh0dHA6Ly9sb2NhbGhvc3Q6Mzk3MTAiLCJodHRwczovL2xvY2FsaG9zdDo0NDMwMiIsImh0dHBzOi8vbG9jYWxob3N0OjcwMTQiLCJodHRwOi8vbG9jYWxob3N0OjQ1MDI3Il0sIm5iZiI6MTczNzg2MzYwMSwiZXhwIjoxNzQ1NjM5NjAxLCJpYXQiOjE3Mzc4NjM2MDIsImlzcyI6ImRvdG5ldC11c2VyLWp3dHMifQ.KEK1BLw0sdSlOswTS-3KNGfHmHygefmbwcqJrHCf_kg"))
+            .Build();
+
+        hubConnection.On<string>("ReceiveNotification", message =>
+        {
+            messages.Add(message);
+            InvokeAsync(StateHasChanged);
+        });
+
+        await hubConnection.StartAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
+}

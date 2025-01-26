@@ -398,3 +398,4 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+/Blazor.Notifications/Blazor.Notifications.Api/appsettings.Development.json
